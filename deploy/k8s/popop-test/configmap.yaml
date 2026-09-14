@@ -1,0 +1,52 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sub2api-config
+  namespace: sub2api
+  labels:
+    app.kubernetes.io/part-of: sub2api
+data:
+  # ---- 基础 ----
+  RUN_MODE: standard
+  SERVER_HOST: 0.0.0.0
+  SERVER_PORT: "8080"
+  SERVER_MODE: release
+  TZ: Asia/Shanghai
+  AUTO_SETUP: "true"
+  ADMIN_EMAIL: admin@sub2api.local
+  JWT_EXPIRE_HOUR: "24"
+
+  # ---- PostgreSQL（同命名空间 postgres Service）----
+  DATABASE_HOST: postgres
+  DATABASE_PORT: "5432"
+  DATABASE_USER: sub2api
+  DATABASE_DBNAME: sub2api
+  DATABASE_SSLMODE: disable
+  DATABASE_MAX_OPEN_CONNS: "50"
+  DATABASE_MAX_IDLE_CONNS: "10"
+  DATABASE_CONN_MAX_LIFETIME_MINUTES: "30"
+  DATABASE_CONN_MAX_IDLE_TIME_MINUTES: "5"
+
+  # ---- Redis（同命名空间 redis Service）----
+  REDIS_HOST: redis
+  REDIS_PORT: "6379"
+  REDIS_DB: "0"
+  REDIS_ENABLE_TLS: "false"
+  REDIS_POOL_SIZE: "1024"
+  REDIS_MIN_IDLE_CONNS: "10"
+
+  # ---- 出站 URL 白名单（测试环境放开）----
+  SECURITY_URL_ALLOWLIST_ENABLED: "false"
+  SECURITY_URL_ALLOWLIST_ALLOW_PRIVATE_HOSTS: "true"
+  SECURITY_URL_ALLOWLIST_ALLOW_INSECURE_HTTP: "true"
+
+  # ---- 飞书（Lark）OAuth 登录 ----
+  # 端点与 SigNoz 飞书 SSO 使用同一套（飞书国内版）。
+  # App ID / App Secret / 启用开关走 Secret `sub2api-feishu`（见 feishu-secret.example.yaml），
+  # 也可以不配 Secret，直接在 sub2api 后台「系统设置 → 飞书登录」里填写（存 DB，优先级高于 env）。
+  FEISHU_CONNECT_AUTHORIZE_URL: https://accounts.feishu.cn/open-apis/authen/v1/authorize
+  FEISHU_CONNECT_TOKEN_URL: https://open.feishu.cn/open-apis/authen/v2/oauth/token
+  FEISHU_CONNECT_USERINFO_URL: https://open.feishu.cn/open-apis/authen/v1/user_info
+  FEISHU_CONNECT_REDIRECT_URL: https://sub2api.popop.ai/api/v1/auth/oauth/feishu/callback
+  FEISHU_CONNECT_FRONTEND_REDIRECT_URL: /auth/feishu/callback
+  FEISHU_CONNECT_REQUIRE_EMAIL: "false"

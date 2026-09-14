@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: http
+  namespace: sub2api
+  annotations:
+    nginx.ingress.kubernetes.io/service-weight: ""
+spec:
+  ingressClassName: alb
+  tls:
+    - hosts:
+        - sub2api.popop.ai
+      secretName: sub2api-popop-ai-tls
+  rules:
+    - host: sub2api.popop.ai
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: sub2api
+                port:
+                  number: 80
