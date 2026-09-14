@@ -99,6 +99,13 @@ type UpdateSettingsRequest struct {
 	DingTalkConnectSyncDisplayNameAttrName string `json:"dingtalk_connect_sync_display_name_attr_name"`
 	DingTalkConnectSyncDeptAttrName        string `json:"dingtalk_connect_sync_dept_attr_name"`
 
+	// Feishu (Lark) Connect OAuth 登录
+	FeishuConnectEnabled      bool   `json:"feishu_connect_enabled"`
+	FeishuConnectClientID     string `json:"feishu_connect_client_id"`
+	FeishuConnectClientSecret string `json:"feishu_connect_client_secret"`
+	FeishuConnectRedirectURL  string `json:"feishu_connect_redirect_url"`
+	FeishuConnectRequireEmail bool   `json:"feishu_connect_require_email"`
+
 	// WeChat Connect OAuth 登录
 	WeChatConnectEnabled             bool   `json:"wechat_connect_enabled"`
 	WeChatConnectAppID               string `json:"wechat_connect_app_id"`
@@ -952,6 +959,33 @@ func (h *SettingHandler) UpdateSettings(c *gin.Context) {
 		}
 	}
 
+	// Feishu (Lark) Connect 参数验证
+	if req.FeishuConnectEnabled {
+		req.FeishuConnectClientID = strings.TrimSpace(req.FeishuConnectClientID)
+		req.FeishuConnectClientSecret = strings.TrimSpace(req.FeishuConnectClientSecret)
+		req.FeishuConnectRedirectURL = strings.TrimSpace(req.FeishuConnectRedirectURL)
+
+		if req.FeishuConnectClientID == "" {
+			response.BadRequest(c, "Feishu App ID is required when enabled")
+			return
+		}
+		if req.FeishuConnectRedirectURL == "" {
+			response.BadRequest(c, "Feishu Redirect URL is required when enabled")
+			return
+		}
+		if err := config.ValidateAbsoluteHTTPURL(req.FeishuConnectRedirectURL); err != nil {
+			response.BadRequest(c, "Feishu Redirect URL must be an absolute http(s) URL")
+			return
+		}
+		if req.FeishuConnectClientSecret == "" {
+			if previousSettings.FeishuConnectClientSecret == "" {
+				response.BadRequest(c, "Feishu App Secret is required when enabled")
+				return
+			}
+			req.FeishuConnectClientSecret = previousSettings.FeishuConnectClientSecret
+		}
+	}
+
 	if req.WeChatConnectEnabled {
 		req.WeChatConnectAppID = strings.TrimSpace(req.WeChatConnectAppID)
 		req.WeChatConnectAppSecret = strings.TrimSpace(req.WeChatConnectAppSecret)
@@ -1569,6 +1603,11 @@ func (h *SettingHandler) UpdateSettings(c *gin.Context) {
 		DingTalkConnectSyncCorpEmailAttrName:   req.DingTalkConnectSyncCorpEmailAttrName,
 		DingTalkConnectSyncDisplayNameAttrName: req.DingTalkConnectSyncDisplayNameAttrName,
 		DingTalkConnectSyncDeptAttrName:        req.DingTalkConnectSyncDeptAttrName,
+		FeishuConnectEnabled:                   req.FeishuConnectEnabled,
+		FeishuConnectClientID:                  req.FeishuConnectClientID,
+		FeishuConnectClientSecret:              req.FeishuConnectClientSecret,
+		FeishuConnectRedirectURL:               req.FeishuConnectRedirectURL,
+		FeishuConnectRequireEmail:              req.FeishuConnectRequireEmail,
 		WeChatConnectEnabled:                   req.WeChatConnectEnabled,
 		WeChatConnectAppID:                     req.WeChatConnectAppID,
 		WeChatConnectAppSecret:                 req.WeChatConnectAppSecret,
@@ -2209,6 +2248,11 @@ func (h *SettingHandler) UpdateSettings(c *gin.Context) {
 		DingTalkConnectSyncCorpEmailAttrName:                   updatedSettings.DingTalkConnectSyncCorpEmailAttrName,
 		DingTalkConnectSyncDisplayNameAttrName:                 updatedSettings.DingTalkConnectSyncDisplayNameAttrName,
 		DingTalkConnectSyncDeptAttrName:                        updatedSettings.DingTalkConnectSyncDeptAttrName,
+		FeishuConnectEnabled:                                   updatedSettings.FeishuConnectEnabled,
+		FeishuConnectClientID:                                  updatedSettings.FeishuConnectClientID,
+		FeishuConnectClientSecretConfigured:                    updatedSettings.FeishuConnectClientSecretConfigured,
+		FeishuConnectRedirectURL:                               updatedSettings.FeishuConnectRedirectURL,
+		FeishuConnectRequireEmail:                              updatedSettings.FeishuConnectRequireEmail,
 		WeChatConnectEnabled:                                   updatedSettings.WeChatConnectEnabled,
 		WeChatConnectAppID:                                     updatedSettings.WeChatConnectAppID,
 		WeChatConnectAppSecretConfigured:                       updatedSettings.WeChatConnectAppSecretConfigured,

@@ -203,6 +203,21 @@ func diffSettings(before *service.SystemSettings, after *service.SystemSettings,
 	if before.DingTalkConnectSyncDeptAttrKey != after.DingTalkConnectSyncDeptAttrKey {
 		changed = append(changed, "dingtalk_connect_sync_dept_attr_key")
 	}
+	if before.FeishuConnectEnabled != after.FeishuConnectEnabled {
+		changed = append(changed, "feishu_connect_enabled")
+	}
+	if before.FeishuConnectClientID != after.FeishuConnectClientID {
+		changed = append(changed, "feishu_connect_client_id")
+	}
+	if req.FeishuConnectClientSecret != "" {
+		changed = append(changed, "feishu_connect_client_secret")
+	}
+	if before.FeishuConnectRedirectURL != after.FeishuConnectRedirectURL {
+		changed = append(changed, "feishu_connect_redirect_url")
+	}
+	if before.FeishuConnectRequireEmail != after.FeishuConnectRequireEmail {
+		changed = append(changed, "feishu_connect_require_email")
+	}
 	if before.WeChatConnectEnabled != after.WeChatConnectEnabled {
 		changed = append(changed, "wechat_connect_enabled")
 	}

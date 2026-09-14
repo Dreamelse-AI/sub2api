@@ -18,6 +18,7 @@ const publicSettings = {
   aliyun_captcha_prefix: '',
   linuxdo_oauth_enabled: false,
   dingtalk_oauth_enabled: false,
+  feishu_oauth_enabled: false,
   wechat_oauth_enabled: false,
   backend_mode_enabled: false,
   oidc_oauth_enabled: false,
@@ -75,6 +76,7 @@ function mountLogin() {
       stubs: {
         AuthLayout: { template: '<div><slot /><slot name="footer" /></div>' },
         DingTalkOAuthSection: true,
+        FeishuOAuthSection: true,
         EmailOAuthButtons: true,
         Icon: true,
         LinuxDoOAuthSection: true,

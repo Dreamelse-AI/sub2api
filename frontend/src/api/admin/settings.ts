@@ -541,6 +541,13 @@ export interface SystemSettings {
   dingtalk_connect_sync_display_name_attr_name: string;
   dingtalk_connect_sync_dept_attr_name: string;
 
+  // Feishu (Lark) Connect OAuth settings
+  feishu_connect_enabled: boolean;
+  feishu_connect_client_id: string;
+  feishu_connect_client_secret_configured: boolean;
+  feishu_connect_redirect_url: string;
+  feishu_connect_require_email: boolean;
+
   // WeChat Connect OAuth settings
   wechat_connect_enabled: boolean;
   wechat_connect_app_id: string;
@@ -878,6 +885,11 @@ export interface UpdateSettingsRequest {
   dingtalk_connect_sync_corp_email_attr_name?: string;
   dingtalk_connect_sync_display_name_attr_name?: string;
   dingtalk_connect_sync_dept_attr_name?: string;
+  feishu_connect_enabled?: boolean;
+  feishu_connect_client_id?: string;
+  feishu_connect_client_secret?: string;
+  feishu_connect_redirect_url?: string;
+  feishu_connect_require_email?: boolean;
   wechat_connect_enabled?: boolean;
   wechat_connect_app_id?: string;
   wechat_connect_app_secret?: string;

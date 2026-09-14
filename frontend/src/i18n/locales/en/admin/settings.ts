@@ -309,6 +309,26 @@ export default {
         quickSetCopy: 'Generate & Copy (current site)',
         redirectUrlSetAndCopied: 'Redirect URL generated and copied to clipboard'
       },
+      feishu: {
+        title: 'Feishu (Lark) Login',
+        description: 'Configure Feishu (Lark) OAuth for Sub2API end-user login; the same Feishu app can be shared with SigNoz and other systems',
+        enable: 'Enable Feishu Login',
+        enableHint: 'Show Feishu login on the login/register pages',
+        clientId: 'App ID',
+        clientIdPlaceholder: 'e.g., cli_xxxxxxxxxxxxxxxx',
+        clientIdHint: 'Get this from Feishu Open Platform → App details → Credentials',
+        clientSecret: 'App Secret',
+        clientSecretPlaceholder: '********',
+        clientSecretHint: 'Used by backend to exchange tokens (keep it secret)',
+        clientSecretConfiguredPlaceholder: '********',
+        clientSecretConfiguredHint: 'Secret configured. Leave empty to keep the current value.',
+        redirectUrl: 'Redirect URL',
+        redirectUrlPlaceholder: 'https://your-domain.com/api/v1/auth/oauth/feishu/callback',
+        redirectUrlHint:
+          'Must exactly match a redirect URL registered under Feishu Open Platform → Security settings (must be an absolute http(s) URL)',
+        requireEmail: 'Require email on signup',
+        requireEmailHint: 'When enabled, users whose Feishu profile has no email must fill one in before registering; when disabled, a placeholder email derived from the Feishu identity is used'
+      },
       dingtalk: {
         title: 'DingTalk Login',
         description: 'Configure DingTalk OAuth for Sub2API end-user login',

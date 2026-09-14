@@ -1013,3 +1013,88 @@ func oidcResolveProviderMetadata(ctx context.Context, discoveryURL string) (*oid
 	}
 	return metadata, nil
 }
+
+// GetFeishuConnectOAuthConfig 返回用于登录的"最终生效"飞书（Lark）Connect 配置。
+//
+// 优先级：
+// - 若对应系统设置键存在，则覆盖 config.yaml/env 的值
+// - 否则回退到 config.yaml/env 的值
+func (s *SettingService) GetFeishuConnectOAuthConfig(ctx context.Context) (config.FeishuConnectConfig, error) {
+	if s == nil || s.cfg == nil {
+		return config.FeishuConnectConfig{}, infraerrors.ServiceUnavailable("CONFIG_NOT_READY", "config not loaded")
+	}
+
+	effective := s.cfg.Feishu
+
+	keys := []string{
+		SettingKeyFeishuConnectEnabled,
+		SettingKeyFeishuConnectClientID,
+		SettingKeyFeishuConnectClientSecret,
+		SettingKeyFeishuConnectRedirectURL,
+		SettingKeyFeishuConnectRequireEmail,
+	}
+	settings, err := s.settingRepo.GetMultiple(ctx, keys)
+	if err != nil {
+		return config.FeishuConnectConfig{}, fmt.Errorf("get feishu connect settings: %w", err)
+	}
+
+	if raw, ok := settings[SettingKeyFeishuConnectEnabled]; ok {
+		effective.Enabled = raw == "true"
+	}
+	if v, ok := settings[SettingKeyFeishuConnectClientID]; ok && strings.TrimSpace(v) != "" {
+		effective.ClientID = strings.TrimSpace(v)
+	}
+	if v, ok := settings[SettingKeyFeishuConnectClientSecret]; ok && strings.TrimSpace(v) != "" {
+		effective.ClientSecret = strings.TrimSpace(v)
+	}
+	if v, ok := settings[SettingKeyFeishuConnectRedirectURL]; ok && strings.TrimSpace(v) != "" {
+		effective.RedirectURL = strings.TrimSpace(v)
+	}
+	if v, ok := settings[SettingKeyFeishuConnectRequireEmail]; ok && strings.TrimSpace(v) != "" {
+		effective.RequireEmail = strings.EqualFold(strings.TrimSpace(v), "true")
+	}
+
+	if !effective.Enabled {
+		return config.FeishuConnectConfig{}, infraerrors.NotFound("OAUTH_DISABLED", "feishu oauth login is disabled")
+	}
+
+	if strings.TrimSpace(effective.ClientID) == "" {
+		return config.FeishuConnectConfig{}, infraerrors.InternalServer("OAUTH_CONFIG_INVALID", "feishu oauth client id not configured")
+	}
+	if strings.TrimSpace(effective.ClientSecret) == "" {
+		return config.FeishuConnectConfig{}, infraerrors.InternalServer("OAUTH_CONFIG_INVALID", "feishu oauth client secret not configured")
+	}
+	if strings.TrimSpace(effective.AuthorizeURL) == "" {
+		return config.FeishuConnectConfig{}, infraerrors.InternalServer("OAUTH_CONFIG_INVALID", "feishu oauth authorize url not configured")
+	}
+	if strings.TrimSpace(effective.TokenURL) == "" {
+		return config.FeishuConnectConfig{}, infraerrors.InternalServer("OAUTH_CONFIG_INVALID", "feishu oauth token url not configured")
+	}
+	if strings.TrimSpace(effective.UserInfoURL) == "" {
+		return config.FeishuConnectConfig{}, infraerrors.InternalServer("OAUTH_CONFIG_INVALID", "feishu oauth userinfo url not configured")
+	}
+	if strings.TrimSpace(effective.RedirectURL) == "" {
+		return config.FeishuConnectConfig{}, infraerrors.InternalServer("OAUTH_CONFIG_INVALID", "feishu oauth redirect url not configured")
+	}
+	if strings.TrimSpace(effective.FrontendRedirectURL) == "" {
+		return config.FeishuConnectConfig{}, infraerrors.InternalServer("OAUTH_CONFIG_INVALID", "feishu oauth frontend redirect url not configured")
+	}
+
+	if err := config.ValidateAbsoluteHTTPURL(effective.AuthorizeURL); err != nil {
+		return config.FeishuConnectConfig{}, infraerrors.InternalServer("OAUTH_CONFIG_INVALID", "feishu oauth authorize url invalid")
+	}
+	if err := config.ValidateAbsoluteHTTPURL(effective.TokenURL); err != nil {
+		return config.FeishuConnectConfig{}, infraerrors.InternalServer("OAUTH_CONFIG_INVALID", "feishu oauth token url invalid")
+	}
+	if err := config.ValidateAbsoluteHTTPURL(effective.UserInfoURL); err != nil {
+		return config.FeishuConnectConfig{}, infraerrors.InternalServer("OAUTH_CONFIG_INVALID", "feishu oauth userinfo url invalid")
+	}
+	if err := config.ValidateAbsoluteHTTPURL(effective.RedirectURL); err != nil {
+		return config.FeishuConnectConfig{}, infraerrors.InternalServer("OAUTH_CONFIG_INVALID", "feishu oauth redirect url invalid")
+	}
+	if err := config.ValidateFrontendRedirectURL(effective.FrontendRedirectURL); err != nil {
+		return config.FeishuConnectConfig{}, infraerrors.InternalServer("OAUTH_CONFIG_INVALID", "feishu oauth frontend redirect url invalid")
+	}
+
+	return effective, nil
+}

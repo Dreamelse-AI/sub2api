@@ -88,6 +88,7 @@ function mountLogin() {
         EmailOAuthButtons: OAuthButtonStub,
         LinuxDoOAuthSection: true,
         DingTalkOAuthSection: true,
+        FeishuOAuthSection: true,
         OidcOAuthSection: true,
         WechatOAuthSection: true
       }

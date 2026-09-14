@@ -70,6 +70,7 @@ func TestAPIContracts(t *testing.T) {
 					"oidc_bound": false,
 					"wechat_bound": false,
 					"dingtalk_bound": false,
+					"feishu_bound": false,
 					"identities": {
 						"email": {
 							"provider": "email",
@@ -114,6 +115,14 @@ func TestAPIContracts(t *testing.T) {
 							"can_bind": true,
 							"can_unbind": false,
 							"bind_start_path": "/api/v1/auth/oauth/dingtalk/bind/start?intent=bind_current_user&redirect=%2Fsettings%2Fprofile"
+						},
+						"feishu": {
+							"provider": "feishu",
+							"bound": false,
+							"bound_count": 0,
+							"can_bind": true,
+							"can_unbind": false,
+							"bind_start_path": "/api/v1/auth/oauth/feishu/bind/start?intent=bind_current_user&redirect=%2Fsettings%2Fprofile"
 						}
 					},
 					"identity_bindings": {
@@ -160,6 +169,14 @@ func TestAPIContracts(t *testing.T) {
 							"can_bind": true,
 							"can_unbind": false,
 							"bind_start_path": "/api/v1/auth/oauth/dingtalk/bind/start?intent=bind_current_user&redirect=%2Fsettings%2Fprofile"
+						},
+						"feishu": {
+							"provider": "feishu",
+							"bound": false,
+							"bound_count": 0,
+							"can_bind": true,
+							"can_unbind": false,
+							"bind_start_path": "/api/v1/auth/oauth/feishu/bind/start?intent=bind_current_user&redirect=%2Fsettings%2Fprofile"
 						}
 					},
 					"auth_bindings": {
@@ -206,6 +223,14 @@ func TestAPIContracts(t *testing.T) {
 							"can_bind": true,
 							"can_unbind": false,
 							"bind_start_path": "/api/v1/auth/oauth/dingtalk/bind/start?intent=bind_current_user&redirect=%2Fsettings%2Fprofile"
+						},
+						"feishu": {
+							"provider": "feishu",
+							"bound": false,
+							"bound_count": 0,
+							"can_bind": true,
+							"can_unbind": false,
+							"bind_start_path": "/api/v1/auth/oauth/feishu/bind/start?intent=bind_current_user&redirect=%2Fsettings%2Fprofile"
 						}
 					},
 					"run_mode": "standard"
@@ -781,6 +806,11 @@ func TestAPIContracts(t *testing.T) {
 						"dingtalk_connect_sync_display_name": false,
 						"dingtalk_connect_sync_display_name_attr_key": "dingtalk_name",
 						"dingtalk_connect_sync_display_name_attr_name": "钉钉姓名",
+						"feishu_connect_enabled": false,
+						"feishu_connect_client_id": "",
+						"feishu_connect_client_secret_configured": false,
+						"feishu_connect_redirect_url": "",
+						"feishu_connect_require_email": false,
 						"oidc_connect_enabled": false,
 						"oidc_connect_provider_name": "OIDC",
 						"oidc_connect_client_id": "",
@@ -1133,6 +1163,11 @@ func TestAPIContracts(t *testing.T) {
 					"dingtalk_connect_sync_display_name": false,
 					"dingtalk_connect_sync_display_name_attr_key": "dingtalk_name",
 					"dingtalk_connect_sync_display_name_attr_name": "钉钉姓名",
+					"feishu_connect_enabled": false,
+					"feishu_connect_client_id": "",
+					"feishu_connect_client_secret_configured": false,
+					"feishu_connect_redirect_url": "",
+					"feishu_connect_require_email": false,
 					"oidc_connect_enabled": true,
 					"oidc_connect_provider_name": "ConfigOIDC",
 					"oidc_connect_client_id": "oidc-config-client",

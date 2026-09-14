@@ -307,6 +307,25 @@ export default {
         quickSetCopy: '使用当前站点生成并复制',
         redirectUrlSetAndCopied: '已使用当前站点生成回调地址并复制到剪贴板'
       },
+      feishu: {
+        title: '飞书登录',
+        description: '配置飞书（Lark）OAuth，用于 Sub2API 用户登录；可与 SigNoz 等系统复用同一个飞书应用',
+        enable: '启用飞书登录',
+        enableHint: '在登录/注册页面显示飞书登录入口',
+        clientId: 'App ID',
+        clientIdPlaceholder: '例如：cli_xxxxxxxxxxxxxxxx',
+        clientIdHint: '从飞书开放平台 → 应用详情 → 凭证与基础信息获取',
+        clientSecret: 'App Secret',
+        clientSecretPlaceholder: '********',
+        clientSecretHint: '用于后端交换 token（请保密）',
+        clientSecretConfiguredPlaceholder: '********',
+        clientSecretConfiguredHint: '密钥已配置，留空以保留当前值。',
+        redirectUrl: '回调地址（Redirect URL）',
+        redirectUrlPlaceholder: 'https://your-domain.com/api/v1/auth/oauth/feishu/callback',
+        redirectUrlHint: '需在飞书开放平台 → 安全设置 → 重定向 URL 中登记完全一致的地址（必须是 http(s) 完整 URL）',
+        requireEmail: '注册必须有邮箱',
+        requireEmailHint: '开启后，飞书未返回邮箱的用户需要补填邮箱才能注册；关闭时直接用飞书身份生成占位邮箱注册'
+      },
       dingtalk: {
         title: '钉钉登录',
         description: '配置钉钉 OAuth，用于 Sub2API 用户登录',

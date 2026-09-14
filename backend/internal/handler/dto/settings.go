@@ -98,6 +98,13 @@ type SystemSettings struct {
 	DingTalkConnectSyncDisplayNameAttrName string `json:"dingtalk_connect_sync_display_name_attr_name"`
 	DingTalkConnectSyncDeptAttrName        string `json:"dingtalk_connect_sync_dept_attr_name"`
 
+	// Feishu (Lark) Connect OAuth 登录
+	FeishuConnectEnabled                bool   `json:"feishu_connect_enabled"`
+	FeishuConnectClientID               string `json:"feishu_connect_client_id"`
+	FeishuConnectClientSecretConfigured bool   `json:"feishu_connect_client_secret_configured"`
+	FeishuConnectRedirectURL            string `json:"feishu_connect_redirect_url"`
+	FeishuConnectRequireEmail           bool   `json:"feishu_connect_require_email"`
+
 	WeChatConnectEnabled                   bool   `json:"wechat_connect_enabled"`
 	WeChatConnectAppID                     string `json:"wechat_connect_app_id"`
 	WeChatConnectAppSecretConfigured       bool   `json:"wechat_connect_app_secret_configured"`
@@ -397,6 +404,7 @@ type PublicSettings struct {
 	CustomMenuItems                     []CustomMenuItem         `json:"custom_menu_items"`
 	CustomEndpoints                     []CustomEndpoint         `json:"custom_endpoints"`
 	DingTalkOAuthEnabled                bool                     `json:"dingtalk_oauth_enabled"`
+	FeishuOAuthEnabled                  bool                     `json:"feishu_oauth_enabled"`
 	LinuxDoOAuthEnabled                 bool                     `json:"linuxdo_oauth_enabled"`
 	WeChatOAuthEnabled                  bool                     `json:"wechat_oauth_enabled"`
 	WeChatOAuthOpenEnabled              bool                     `json:"wechat_oauth_open_enabled"`

@@ -406,7 +406,8 @@ func (h *AuthHandler) findLinuxDoCompatEmailUser(ctx context.Context, email stri
 		strings.HasSuffix(email, service.LinuxDoConnectSyntheticEmailDomain) ||
 		strings.HasSuffix(email, service.OIDCConnectSyntheticEmailDomain) ||
 		strings.HasSuffix(email, service.WeChatConnectSyntheticEmailDomain) ||
-		strings.HasSuffix(email, service.DingTalkConnectSyntheticEmailDomain) {
+		strings.HasSuffix(email, service.DingTalkConnectSyntheticEmailDomain) ||
+		strings.HasSuffix(email, service.FeishuConnectSyntheticEmailDomain) {
 		return nil, nil
 	}
 
