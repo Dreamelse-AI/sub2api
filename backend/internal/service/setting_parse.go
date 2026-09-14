@@ -591,6 +591,44 @@ func (s *SettingService) parseSettings(settings map[string]string) *SystemSettin
 		}
 	}
 
+	// Feishu (Lark) Connect 设置：
+	// - 兼容 config.yaml/env
+	// - 支持后台系统设置覆盖并持久化（存储于 DB）
+	feishuBase := config.FeishuConnectConfig{}
+	if s.cfg != nil {
+		feishuBase = s.cfg.Feishu
+	}
+
+	if raw, ok := settings[SettingKeyFeishuConnectEnabled]; ok {
+		result.FeishuConnectEnabled = raw == "true"
+	} else {
+		result.FeishuConnectEnabled = feishuBase.Enabled
+	}
+
+	if v, ok := settings[SettingKeyFeishuConnectClientID]; ok && strings.TrimSpace(v) != "" {
+		result.FeishuConnectClientID = strings.TrimSpace(v)
+	} else {
+		result.FeishuConnectClientID = feishuBase.ClientID
+	}
+
+	if v, ok := settings[SettingKeyFeishuConnectRedirectURL]; ok && strings.TrimSpace(v) != "" {
+		result.FeishuConnectRedirectURL = strings.TrimSpace(v)
+	} else {
+		result.FeishuConnectRedirectURL = feishuBase.RedirectURL
+	}
+
+	result.FeishuConnectClientSecret = strings.TrimSpace(settings[SettingKeyFeishuConnectClientSecret])
+	if result.FeishuConnectClientSecret == "" {
+		result.FeishuConnectClientSecret = strings.TrimSpace(feishuBase.ClientSecret)
+	}
+	result.FeishuConnectClientSecretConfigured = result.FeishuConnectClientSecret != ""
+
+	if v, ok := settings[SettingKeyFeishuConnectRequireEmail]; ok && strings.TrimSpace(v) != "" {
+		result.FeishuConnectRequireEmail = strings.EqualFold(strings.TrimSpace(v), "true")
+	} else {
+		result.FeishuConnectRequireEmail = feishuBase.RequireEmail
+	}
+
 	// Generic OIDC 设置：
 	// - 兼容 config.yaml/env
 	// - 支持后台系统设置覆盖并持久化（存储于 DB）

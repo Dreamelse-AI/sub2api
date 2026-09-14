@@ -88,6 +88,14 @@ type SystemSettings struct {
 	DingTalkConnectSyncDisplayNameAttrName string
 	DingTalkConnectSyncDeptAttrName        string
 
+	// Feishu (Lark) Connect OAuth 登录
+	FeishuConnectEnabled                bool
+	FeishuConnectClientID               string
+	FeishuConnectClientSecret           string
+	FeishuConnectClientSecretConfigured bool
+	FeishuConnectRedirectURL            string
+	FeishuConnectRequireEmail           bool
+
 	// WeChat Connect OAuth 登录
 	WeChatConnectEnabled                   bool
 	WeChatConnectAppID                     string
@@ -366,6 +374,7 @@ type PublicSettings struct {
 
 	LinuxDoOAuthEnabled      bool
 	DingTalkOAuthEnabled     bool
+	FeishuOAuthEnabled       bool
 	WeChatOAuthEnabled       bool
 	WeChatOAuthOpenEnabled   bool
 	WeChatOAuthMPEnabled     bool

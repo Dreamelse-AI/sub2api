@@ -1,0 +1,15 @@
+# 由集群内 cert-manager（ClusterIssuer letsencrypt-prod，DNS-01 via alidns webhook）签发，
+# 与 signoz / horus 等服务同一套。签发后 Secret 名为 sub2api-popop-ai-tls，供 ingress.yaml 的 tls 使用。
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: sub2api-popop-ai-cert
+  namespace: sub2api
+spec:
+  commonName: sub2api.popop.ai
+  dnsNames:
+    - sub2api.popop.ai
+  issuerRef:
+    kind: ClusterIssuer
+    name: letsencrypt-prod
+  secretName: sub2api-popop-ai-tls

@@ -82,6 +82,7 @@ type Config struct {
 	WeChat                  WeChatConnectConfig           `mapstructure:"wechat_connect"`
 	OIDC                    OIDCConnectConfig             `mapstructure:"oidc_connect"`
 	DingTalk                DingTalkConnectConfig         `mapstructure:"dingtalk_connect"`
+	Feishu                  FeishuConnectConfig           `mapstructure:"feishu_connect"`
 	GitHubOAuth             EmailOAuthProviderConfig      `mapstructure:"github_oauth"`
 	GoogleOAuth             EmailOAuthProviderConfig      `mapstructure:"google_oauth"`
 	Default                 DefaultConfig                 `mapstructure:"default"`
@@ -398,6 +399,27 @@ type DingTalkConnectConfig struct {
 	EnableAttributeSync          bool     `mapstructure:"enable_attribute_sync"`
 	AttributeSyncFields          []string `mapstructure:"attribute_sync_fields"`
 	AttributeSyncOverwritePolicy string   `mapstructure:"attribute_sync_overwrite_policy"`
+}
+
+// FeishuConnectConfig 是飞书（Lark）OAuth 登录配置。
+//
+// 飞书不是标准 OIDC：没有 discovery 文档，token 响应也不带 id_token，
+// 因此端点显式配置（默认飞书国内端点；国际版 Lark 可改为 larksuite 端点）。
+// authorize 必须搭配 authen/v2/oauth/token（JSON body），authen/v1/user_info 用 Bearer user_access_token。
+type FeishuConnectConfig struct {
+	Enabled             bool   `mapstructure:"enabled"`
+	ClientID            string `mapstructure:"client_id"`     // 飞书开放平台 App ID
+	ClientSecret        string `mapstructure:"client_secret"` // 飞书开放平台 App Secret
+	AuthorizeURL        string `mapstructure:"authorize_url"`
+	TokenURL            string `mapstructure:"token_url"`
+	UserInfoURL         string `mapstructure:"userinfo_url"`
+	Scopes              string `mapstructure:"scopes"`
+	RedirectURL         string `mapstructure:"redirect_url"`
+	FrontendRedirectURL string `mapstructure:"frontend_redirect_url"`
+
+	// RequireEmail=true 时，飞书未返回邮箱的用户需要补邮箱才能注册；
+	// false 时直接用 union_id 合成邮箱注册（与钉钉一致）。
+	RequireEmail bool `mapstructure:"require_email"`
 }
 
 type EmailOAuthProviderConfig struct {
@@ -2157,6 +2179,15 @@ func setDefaults() {
 	viper.SetDefault("dingtalk_connect.require_email", true)
 	viper.SetDefault("dingtalk_connect.username_overwrite_policy", "if_empty")
 
+	// Feishu (Lark) Connect OAuth 登录
+	viper.SetDefault("feishu_connect.enabled", false)
+	viper.SetDefault("feishu_connect.authorize_url", "https://accounts.feishu.cn/open-apis/authen/v1/authorize")
+	viper.SetDefault("feishu_connect.token_url", "https://open.feishu.cn/open-apis/authen/v2/oauth/token")
+	viper.SetDefault("feishu_connect.userinfo_url", "https://open.feishu.cn/open-apis/authen/v1/user_info")
+	viper.SetDefault("feishu_connect.scopes", "")
+	viper.SetDefault("feishu_connect.frontend_redirect_url", "/auth/feishu/callback")
+	viper.SetDefault("feishu_connect.require_email", false)
+
 	// Database
 	viper.SetDefault("database.host", "localhost")
 	viper.SetDefault("database.port", 5432)
@@ -2648,6 +2679,10 @@ func setEnvReachableDefaults() {
 	viper.SetDefault("dingtalk_connect.sync_corp_email", false)
 	viper.SetDefault("dingtalk_connect.sync_corp_email_attr_key", "")
 	viper.SetDefault("dingtalk_connect.sync_corp_email_attr_name", "")
+
+	viper.SetDefault("feishu_connect.client_id", "")
+	viper.SetDefault("feishu_connect.client_secret", "")
+	viper.SetDefault("feishu_connect.redirect_url", "")
 }
 
 func (c *Config) Validate() error {
