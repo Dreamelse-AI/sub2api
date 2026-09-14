@@ -32,7 +32,7 @@ spec:
           # 由 apply.sh 通过 kubectl set image 覆盖为具体 tag；这里保留一个可用的默认值。
           # ACR 里还没有 popop-i18n-test/sub2api 仓库（当前 RAM 账号无权创建），
           # 暂时复用 popop-i18n-test/data-test 仓库、以 sub2api-* tag 区分。
-          image: wjm20260616-registry.ap-northeast-1.cr.aliyuncs.com/popop-i18n-test/data-test:sub2api-feishu-20260914-1
+          image: wjm20260616-registry.ap-northeast-1.cr.aliyuncs.com/popop-i18n-test/data-test:sub2api-feishu-20260914-2
           imagePullPolicy: IfNotPresent
           ports:
             - name: http

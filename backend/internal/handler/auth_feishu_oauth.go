@@ -370,15 +370,66 @@ func (h *AuthHandler) FeishuOAuthCallback(c *gin.Context) {
 			redirectToFrontendCallback(c, frontendCallback)
 			return
 		}
-		if !cfg.RequireEmail && !forceEmailOnSignup {
-			// 用稳定的 union_id/open_id 合成邮箱直接注册
+		emailVerificationRequired := h.authService != nil && h.authService.IsEmailVerifyEnabled(c.Request.Context())
+		if !cfg.RequireEmail && !forceEmailOnSignup && !emailVerificationRequired {
+			// 用稳定的 union_id/open_id 合成邮箱直接注册并登录（与 LinuxDo 无邮箱路径一致）。
+			// 注意：不能只创建一个 TargetUserID 为空的 pending session 然后跳回前端——
+			// exchange 对这种会话既不会建用户也不会发 token，用户会卡在回调页。
+			if err := h.ensureBackendModeAllowsNewUserLogin(c.Request.Context()); err != nil {
+				redirectOAuthError(c, frontendCallback, "session_error", infraerrors.Reason(err), infraerrors.Message(err))
+				return
+			}
 			syntheticEmail := buildFeishuSyntheticEmail(subject)
-			if err := h.createOAuthPendingSession(c, oauthPendingSessionPayload{
-				Intent: oauthIntentLogin, Identity: identityKey, TargetUserID: nil,
-				ResolvedEmail: syntheticEmail, RedirectTo: redirectTo, BrowserSessionKey: browserSessionKey,
-				UpstreamIdentityClaims: upstreamClaims,
-				CompletionResponse:     map[string]any{"redirect": redirectTo, "synthetic_email": syntheticEmail},
-			}); err != nil {
+			username := info.DisplayName()
+			if username == "" {
+				username = strings.SplitN(syntheticEmail, "@", 2)[0]
+			}
+			tokenPair, user, err := h.authService.LoginOrRegisterOAuthWithTokenPairAndPromoCode(
+				c.Request.Context(),
+				syntheticEmail,
+				username,
+				"",
+				"",
+				readOAuthPromoCode(c),
+				feishuProviderType,
+			)
+			if err == nil {
+				if err := applyPendingOAuthBinding(
+					c.Request.Context(),
+					h.entClient(),
+					h.authService,
+					h.userService,
+					&dbent.PendingAuthSession{
+						Intent:                 oauthIntentLogin,
+						ProviderType:           identityKey.ProviderType,
+						ProviderKey:            identityKey.ProviderKey,
+						ProviderSubject:        identityKey.ProviderSubject,
+						ResolvedEmail:          syntheticEmail,
+						UpstreamIdentityClaims: upstreamClaims,
+					},
+					nil,
+					&user.ID,
+					true,
+					false,
+				); err != nil {
+					redirectOAuthError(c, frontendCallback, "session_error", "failed to bind oauth identity", "")
+					return
+				}
+				h.authService.RecordSuccessfulLogin(c.Request.Context(), user.ID)
+				clearOAuthPendingSessionCookie(c, secureCookie)
+				clearOAuthPendingBrowserCookie(c, secureCookie)
+				redirectOAuthTokenPair(c, frontendCallback, tokenPair, redirectTo)
+				return
+			}
+			if !errors.Is(err, service.ErrOAuthInvitationRequired) {
+				redirectOAuthError(c, frontendCallback, "session_error", infraerrors.Reason(err), infraerrors.Message(err))
+				return
+			}
+			// 站点要求邀请码：回落到 choice pending session，由前端引导填邀请码创建账户
+			if err := h.createFeishuOAuthChoicePendingSession(
+				c, identityKey, syntheticEmail, redirectTo, browserSessionKey, upstreamClaims,
+				nil, forceEmailOnSignup, false,
+			); err != nil {
 				redirectOAuthError(c, frontendCallback, "session_error", infraerrors.Reason(err), infraerrors.Message(err))
 				return
 			}
