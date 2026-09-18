@@ -902,6 +902,8 @@ func (s *AccountUsageService) probeOpenAICodexSnapshot(ctx context.Context, acco
 	}
 	defer func() { _ = resp.Body.Close() }()
 
+	s.clearOpenAIRateLimitIfProbeRecovered(ctx, account, resp)
+
 	updates, err := extractOpenAICodexProbeUpdates(resp)
 	if err != nil {
 		return nil, err
@@ -911,6 +913,33 @@ func (s *AccountUsageService) probeOpenAICodexSnapshot(ctx context.Context, acco
 		return updates, nil
 	}
 	return nil, nil
+}
+
+// clearOpenAIRateLimitIfProbeRecovered 在上游窗口提前重置（如 OpenAI 周额度提前刷新）时清除本地遗留限流。
+// 账号被限流后不再有真实流量，被动采样无法感知恢复；只有探测请求被上游 2xx 接受、且响应头未报告
+// 任何窗口耗尽时，才视为已恢复。否则本地会按 429 当时给出的 reset_at 一直挡住账号。
+func (s *AccountUsageService) clearOpenAIRateLimitIfProbeRecovered(ctx context.Context, account *Account, resp *http.Response) {
+	if s == nil || s.accountRepo == nil || account == nil || resp == nil || !account.IsRateLimited() {
+		return
+	}
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return
+	}
+	if limits := ParseCodexRateLimitHeaders(resp.Header).Normalize(); limits != nil {
+		if (limits.Used5hPercent != nil && *limits.Used5hPercent >= 100) ||
+			(limits.Used7dPercent != nil && *limits.Used7dPercent >= 100) {
+			return
+		}
+	}
+	staleResetAt := *account.RateLimitResetAt
+	if err := s.accountRepo.ClearRateLimit(ctx, account.ID); err != nil {
+		slog.Warn("openai_codex_probe_clear_rate_limit_failed", "account_id", account.ID, "error", err)
+		return
+	}
+	account.RateLimitedAt = nil
+	account.RateLimitResetAt = nil
+	account.OverloadUntil = nil
+	slog.Info("openai_codex_probe_cleared_stale_rate_limit", "account_id", account.ID, "stale_reset_at", staleResetAt)
 }
 
 func (s *AccountUsageService) persistOpenAICodexProbeSnapshot(accountID int64, updates map[string]any) {
